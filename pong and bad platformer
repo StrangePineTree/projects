@@ -1,0 +1,492 @@
+import pygame
+import random
+import pygame_menu
+pygame.init()
+pygame.mixer.init
+
+doExit = False
+clock = pygame.time.Clock()
+p1x = 20
+p1y = 200
+p2y = 300
+p2x = 660
+choice = 0
+choicea = 0
+
+bx = 350
+by = 350
+bVx = 5
+bVy = 4
+
+num = 2
+phase = False
+AI = False
+
+p1Score = 0
+p2Score = 0
+
+cheat = False
+pressed = False
+font = pygame.font.Font(None, 74)
+
+
+#this will break the program if you dont have a sound file named this in the directory(original sound is the taco bell dong)
+score1 = pygame.mixer.Sound("bell.mp3")
+
+screen = pygame.display.set_mode((700, 500))
+
+mxpos = 0
+mypos = 0
+mousePos = (mxpos, mypos)
+
+#menu loop
+
+while choice == 0:
+
+    event = pygame.event.wait()
+
+    
+    pygame.display.set_caption("Monguy games")
+    screen.fill((0,0,15))
+    
+    
+    if event.type == pygame.MOUSEMOTION:
+        mousePos = event.pos
+        
+    if event.type == pygame.MOUSEBUTTONDOWN:
+        pressed = True
+
+    if event.type == pygame.MOUSEBUTTONUP:
+        pressed = False
+        
+    if mousePos[0] > 250 and mousePos[0] < 350 and mousePos[1] > 200 and mousePos[1] < 250 and pressed == True:
+        AI = False
+        choice = 1
+        
+    if mousePos[0] > 250 and mousePos[0] < 350 and mousePos[1] > 150 and mousePos[1] < 200 and pressed == True:
+        AI = True
+        choice = 1
+        
+    if mousePos[0] > 250 and mousePos[0] < 350 and mousePos[1] > 100 and mousePos[1] < 150 and pressed == True:
+        AI = True
+        choice = 2
+                
+        
+        
+# render menu-----------------------------------------------
+    pygame.draw.rect(screen, (50,0,100), (250,200,100,50))
+    pygame.draw.rect(screen, (40,0,120), (250,150,100,50))
+    pygame.draw.rect(screen, (70,0,120), (250,100,100,50))
+    
+    
+    font = pygame.font.Font(None, 74)
+    text = font.render("Monguy Games", 1, (150, 255, 255))
+    screen.blit(text, (150,10))
+    font = pygame.font.Font(None, 30)
+    text = font.render("Pong", .1, (150, 255, 255))
+    screen.blit(text, (273,213))
+    text = font.render("1p Pong", .5, (150, 255, 255))
+    screen.blit(text, (260,163))
+    
+    pygame.display.flip()
+
+
+
+#pong loop
+while choice == 1:
+    clock.tick(60)
+    if AI == True:
+        pygame.display.set_caption("Sad Single Player Pong")
+    if AI == False:
+        pygame.display.set_caption("Epic Pong for Friends")
+    boo = random.randrange(1,100)
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            doExit = True
+#keybinds - - - -
+    keys = pygame.key.get_pressed()
+
+    if AI == False:
+        if keys[pygame.K_UP]:
+            p2y-=6
+        if keys[pygame.K_DOWN]:
+            p2y+=6
+        if keys[pygame.K_w]:
+            p1y-=6
+        if keys[pygame.K_s]:
+            p1y+=6
+    if keys[pygame.K_h] and keys[pygame.K_b]:
+        cheat = True
+    if cheat == True:
+        if keys[pygame.K_a]:
+            p1x-=7
+        if keys[pygame.K_d]:
+            p1x+=7
+        if keys[pygame.K_RSHIFT]:
+            phase = False
+        if keys[pygame.K_RETURN]:
+            phase = True
+    if keys[pygame.K_r]:
+        bx = 350
+        by = 250
+    if keys[pygame.K_u]:
+        AI = True
+    if keys[pygame.K_i]:
+        AI = False
+    if AI == True:
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            p1y-=6
+        if keys[pygame.K_DOWN]or keys[pygame.K_s]:
+            p1y+=6
+    
+            
+#move the ball
+    bx += bVx
+    by += bVy
+    
+#bounce ball against walls
+    if bx < 0 or bx + 20 > 700:
+        bVx *= -1.000
+    if by < 0 or by + 20 > 500:
+        bVy *= -1.000
+    if by <= -4:
+        by += 10
+    if by >= 504:
+        by -= 10
+    
+#paddle 0ne
+
+    if bx < p1x + 20 and by + 20 > p1y and by < p1y + 50 and bx > p1x:
+        bVx = 5
+        bVy = random.randrange(-6,-2)
+
+    if bx < p1x + 20 and by + 20 > p1y and by < p1y + 100 and by >= p1y + 50 and bx > p1x:
+        bVx = 5
+        bVy = random.randrange(2,6)
+#paddle 2
+    if AI == False:
+        if bx+20 > p2x and by + 20 > p2y and by < p2y + 100:
+            bVx = -5
+            if by >= p2x + 50:
+                bVy = random.randrange(-6,-2)
+            else:
+                bVy = random.randrange(2,6)
+#AI stuff
+    if AI == True:
+        if (p2y + 50) >= by:
+            p2y -= (random.randrange(4,6))
+        if p2y + 50 < by:
+            p2y += (random.randrange(4,6))
+            
+        if bx+20 > p2x and by + 20 > p2y and by < p2y + 100:
+            if boo > 50:
+                bVy = random.randrange(2,6)
+                bVx = -5 
+            else:
+                bVx = -5 
+                bVy = random.randrange(-6,-2)
+
+    #following 2 statements use an audeo file
+    if bx < 0:
+        p2Score += 1
+        score1.play()
+    if bx > 680:
+        p1Score += 1
+        score1.play()
+    #render pong - - - -
+
+    if cheat == True:
+        #BG
+        screen.fill((205, 255, 255))
+        if phase == False:
+            #p2
+            pygame.draw.rect(screen, (0,0,15), (p2x, p2y, 20, 100), 150)
+            #p1
+            pygame.draw.rect(screen, (0,0,15), (p1x, p1y, 20, 100), 150)
+        if phase == True:
+            #p2
+            pygame.draw.rect(screen, (0,0,15), (p2x, p2y, 20, 100), 150)
+            #p1
+            pygame.draw.rect(screen, (215, 255, 255), (p1x, p1y, 20, 100), 150)
+        #BG
+        pygame.draw.line(screen, (0,0,15), [349,0], [349,500],5)
+        #ball
+        pygame.draw.rect(screen, (0,0,15), (bx, by, 20, 20), 150)
+        font = pygame.font.Font(None, 74)
+        text = font.render(str(p1Score), 1, (0,0,15))
+        screen.blit(text, (250,10))
+        text = font.render(str(p2Score), 1, (0,0,15))
+        screen.blit(text, (420,10))
+        
+    if cheat == False:
+        #BG
+        screen.fill((0,0,15))      
+        #p2
+        pygame.draw.rect(screen, (205, 255, 255), (p2x, p2y, 20, 100), 150)
+        #p1
+        pygame.draw.rect(screen, (205, 255, 255), (p1x, p1y, 20, 100), 150)
+        #center line
+        pygame.draw.line(screen, (190,255,255), [349,0], [349,500],5)
+        #ball
+        pygame.draw.rect(screen, (205, 255, 255), (bx, by, 20, 20), 150)
+        font = pygame.font.Font(None, 74)
+        text = font.render(str(p1Score), 1, (150, 255, 255))
+        screen.blit(text, (250,10))
+        text = font.render(str(p2Score), 1, (150,255,255))
+        screen.blit(text, (420,10))
+        
+        pygame.display.flip()
+    if event.type == pygame.QUIT:
+        pygame.quit()
+#===============================================================================================================
+#===============================================================================================================
+#Platformor code
+#===============================================================================================================
+#===============================================================================================================
+
+Link = pygame.image.load('spite.png') #load your spritesheet
+Link.set_colorkey((155, 0, 255)) #this makes bright pink (255, 0, 255
+
+pygame.display.set_caption("easy platformer")  # sets the window title
+screen = pygame.display.set_mode((800, 800))  # creates game screen
+
+background = pygame.image.load("BG.jpg")
+
+pygame.mixer.music.load("trap_remix.mp3")
+isOnGround2 = False
+gameover = False
+
+#platform class 1
+class platform:
+    def __init__(self, xpos, ypos):
+        self.xpos = xpos
+        self.ypos = ypos
+    def draw(self):
+           pygame.draw.rect(screen, (255, 0, 255), (self.xpos, self.ypos, 50, 20))
+    def collide(self, x, y):
+        if x+20>self.xpos and x<self.xpos+50 and y+40> self.ypos and y+40 < self.ypos+20:
+            return self.ypos
+        else:
+            return False
+        
+p1 = platform(400,500)
+p2 = platform(300,300)
+p3 = platform(200, 600)
+p4 = platform(670,260)
+p5 = platform(300,200)
+p6 = platform(240, 800)
+p7 = platform(250,270)
+p8 = platform(310,20)
+p9 = platform(350, 120)
+p10 = platform(240,420)
+p11 = platform(200,230)
+p12 = platform(240, 720)
+p13 = platform(300, 650)
+
+frameWidth = 32
+frameHeight = 32
+RowNum = 0 #for left animation, this will need to change for other animations
+frameNum = 0
+ticker = 0
+      
+yVel = 0
+xVel = 0
+      
+LEFT=0
+RIGHT=1
+UP = 2
+DOWN = 3
+A = 0
+W = 1
+D = 2
+    
+    #player variables
+xpos = 500 #xpos of player
+ypos = 760 #ypos of player
+vx = 0 #x velocity of player
+vy = 0 #y velocity of player
+keys = [False, False, False, False] #this list holds whether each key has been pressed
+isOnGround = False #this variable stops gravity from pulling you down more when on a =
+    
+controller = pygame.joystick.Joystick(0) 
+controller.init()
+
+while choice == 2 and not gameover:
+    clock.tick(60) #FPS    
+#this is broken as hell idk why it only works when you drag the screen around
+    pygame.mixer.music.play(loops = -1)
+        
+    #Input Section------------------------------------------------------------
+    for event in pygame.event.get(): #quit game if x is pressed in top corner
+        if event.type == pygame.QUIT:
+            gameover = True
+        
+        xVel = controller.get_axis(0) #returns a number b/t -1 and 1
+        yVel = controller.get_axis(1) #returns a number b/t -1 and 1
+      
+        if event.type == pygame.KEYDOWN: #looking for key presses
+            if event.key == pygame.K_LEFT or xVel < -.1:
+                keys[LEFT]=True
+
+            elif event.key == pygame.K_UP or yVel <= -0.1:
+                keys[UP]=True
+                
+            elif event.key == pygame.K_RIGHT or xVel > .1:
+                keys[RIGHT]=True
+
+        elif event.type == pygame.KEYUP: #looking for key releases
+            if event.key == pygame.K_LEFT:
+                keys[LEFT]=False
+
+            elif event.key == pygame.K_UP:
+                keys[UP]=False
+
+            elif event.key == pygame.K_RIGHT:
+                keys[RIGHT]=False
+   
+    
+
+    print(xVel)
+    print(yVel)
+          
+    #physics section--------------------------------------------------------------------
+    #LEFT MOVEMENT
+    if keys[LEFT]==True:
+        vx=-3
+        direction = LEFT
+    
+    elif keys[RIGHT]==True:
+        vx=+3
+        direction = RIGHT
+        
+    #turn off velocity
+    else:
+        vx = 0
+        #JUMPING
+    if keys[UP] == True and isOnGround == True: #only jump when on the ground
+        vy = -8
+        isOnGround = False
+        direction = UP   
+    #--------------------------
+
+    if p1.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p1.collide(xpos, ypos)-40
+        
+   
+    elif p2.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p2.collide(xpos, ypos)-40
+
+    elif p3.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p3.collide(xpos, ypos)-40
+
+    elif p4.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p4.collide(xpos, ypos)-40
+   
+    elif p5.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p5.collide(xpos, ypos)-40
+   
+    elif p6.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p6.collide(xpos, ypos)-40
+  
+    elif p7.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p7.collide(xpos, ypos)-40
+  
+    elif p8.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p8.collide(xpos, ypos)-40
+   
+    elif p9.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p9.collide(xpos, ypos)-40
+    
+    elif p10.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p10.collide(xpos, ypos)-40
+
+    elif p11.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p11.collide(xpos, ypos)-40
+    
+    elif p12.collide(xpos,ypos) != False:
+        isOnGround = True
+        vy = 0
+        ypos = p12.collide(xpos, ypos)-40
+        
+    elif ypos > 760:
+        isOnGround = True
+        vy = 0
+        ypos = 760
+        
+    else:
+        isOnGround = False
+    
+    #gravity
+    if isOnGround == False:
+        vy+=.2 #notice this grows over time, aka ACCELERATION
+
+    #update player position
+    xpos+=vx 
+    ypos+=vy
+
+
+    # RENDER Section--------------------------------------------------------------------------------
+            
+    screen.blit(background,(0,0))
+
+    
+    p1.draw()
+    p2.draw()
+    p3.draw()
+    p4.draw()
+    p5.draw()
+    p6.draw()
+    p7.draw()
+    p8.draw()
+    p9.draw()
+    p10.draw()
+    p11.draw()
+    p12.draw()
+    
+    if vx>0:
+        RowNum = 0
+        ticker+=1
+        if ticker%10==0: 
+          frameNum+=1
+        if frameNum>1: 
+           frameNum = 0
+           
+    if vx < 0: #left animation
+        RowNum = 1
+        ticker+=1
+        if ticker%10==0: #only change frames every 10 ticks
+          frameNum+=1
+        if frameNum>1: 
+           frameNum = 0
+    
+    screen.blit(Link, (xpos, ypos+14), (frameWidth*frameNum, RowNum*frameHeight, frameWidth, frameHeight))
+    
+    pygame.display.flip()#this actually puts the pixel on the screen
+    
+    if event.type == pygame.QUIT:
+        pygame.quit()
+    
+#end game loop------------------------------------------------------------------------------
