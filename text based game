@@ -1,0 +1,519 @@
+#include<iostream>
+#include <time.h>
+#include <vector>
+using namespace std;
+
+//room updates
+bool lose = false;
+bool killedogre = false;
+bool killedgoblin = false;
+bool killedshop = false;
+bool openedchest = false;
+bool glass = false;
+bool killedbandit = false;
+//general viariables
+int room = 1;
+int gold = 0;
+//combat viarables
+string input = "i like trains";
+string enemy = "default enemy";
+int randnum = 0;
+//slots viarables
+int randnum2 = 0;
+int randnum3 = 0;
+//end of game stats
+int goldwon = 0;
+int goldspent = 0;
+int killed = 0;
+//functions
+bool check(string thing);
+void combat(int mobhp, int mobatk, string enemy);
+void win(int gold, int killed);
+void summon();
+void slots();
+//inventory list
+vector<string> inv;
+
+//the map and general game
+int main() {
+	srand(time(NULL));
+	while (lose == false) {
+		//room 1, large clearing near a small village
+		if (room == 1) {
+			cout << "The edge of the town. You can head North to the casino and West to the shop. You can head South to the bandit camp or East to the goblin terrectory." << endl;
+			cout << "what do you do" << endl;
+			cin >> input;
+			if (input == "south" || input == "s")
+				room = 4;
+			if (input == "north" || input == "n")
+				room = 6;
+			if (input == "east" || input == "e")
+				room = 7;
+			if (input == "west" || input == "w")
+				room = 2;
+			if (input == "gold")
+				cout << gold << endl;
+		}
+		//room 2, border of village, has a shop
+		if (room == 2) {
+			if (killedshop == false)
+				cout << "A shop selling armor and weapons stands at the edge of the town square. The shopkeep looks rather weak and frail. You can shop here or go East" << endl;
+			if (killedshop == true) 
+				cout << "the ruins of a small shop stand here. You can head back east." << endl;
+				cin >> input;
+				if (input == "gold")
+					cout << gold << endl;
+				if (input == "east" || input == "e")
+					room = 1;
+				if (input == "shop") {
+					cout << "I can sell you these wonderful fireproof boots for 1,000 gold, this new set of armor for 500 gold, a shiny new sword for 750 gold, and this old, rusty sword for 150 gold." << endl;
+					cin >> input;
+					if (input == "boots") {
+						if (gold >= 1000) {
+							cout << "enjoy these new boots" << endl;
+							gold -= 1000;
+							inv.push_back("fireboots");
+						}
+						else if (gold < 1000)
+							cout << "you are too poor. To check how much gold you have type gold." << endl;
+					}
+					if (input == "armor") {
+						if (gold >= 500) {
+							cout << "enjoy this new armor" << endl;
+							gold -= 500;
+							inv.push_back("newarmor");
+						}
+						else if (gold < 500)
+							cout << "you are too broke to shop here. To check how much gold you have type gold." << endl;
+					}
+					if (input == "old" || input == "rusty") {
+						if (gold >= 150) {
+							cout << " enjoy!" << endl;
+							gold -= 150;
+							inv.push_back("rustysword");
+						}
+						else if (gold < 150)
+							cout << "you dont have enough money for that. To check how much gold you have type gold." << endl;
+					}
+					if (input == "new" || input == "shiny") {
+						if (gold >= 750) {
+							cout << " enjoy!" << endl;
+							gold -= 750;
+							inv.push_back("goodsword");
+						}
+						else if (gold < 750)
+							cout << "you dont have enough money for that. To check how much gold you have type gold." << endl;
+					}
+
+				}
+				if (input == "fight" || input == "steal" || input == "rob")
+					combat(10, 1, "angery shopkeep");
+
+
+			}
+		//room 3, a summon circile, sepperated from the village by a thick forest 
+		if (room == 3) {
+			cout << "A summoning circle lies in the middle of a clearing. Enemies occasinally spawn from it. You can fight them here or go South." << endl;
+			cin >> input;
+			if (input == "south" || input == "s")
+				room = 7;
+			if (input == "gold")
+				cout << gold << endl;
+			if (input == "fight" || input == "atk"||input == "summon") {
+				summon();
+			}
+
+		}
+		//room 4, a long, gaurded path that leads to the boss
+		if (room == 4) {
+			if (killedbandit == false)
+				cout << "The path to the bandit camp is guarded by a strong looking bandit. Either fight him to continue south or turn back North." << endl;
+			if (killedbandit == true)
+				cout << "An empty path. You can head North or South." << endl;
+			cin >> input;
+			if (input == "south" || input == "s" && killedbandit == true)
+				room = 5;
+			if (input == "north" || input == "n")
+				room = 1;
+			if (input == "atk" || input == "fight" && killedbandit == false) {
+				cout << "You challenge the bandit guards!" << endl;
+				combat(30, 5, "bandit");
+			}
+			if (input == "gold")
+				cout << gold << endl;
+		}
+		//room 5, a bandit camp, where the bandit boss resides 
+		if (room == 5) {
+			if (killedogre == false)
+				cout << "The bandit leader has been alerted to your pressance! You must fight him here or retreat North." << endl;
+			if (killedogre == true)
+				cout << "You enter the empty camp once used as a base for the bandits. You can head North." << endl;
+			cin >> input;
+			if (input == "north" || input == "n")
+				room = 4;
+			if (input == "fight" && killedogre == false)
+				combat(100, 8, "bandit boss");
+			if (input == "gold")
+				cout << gold << endl;
+		}
+		// room 7, seperated from the village by a path, leads to the goblin area, gaurded by a weak goblin 
+		if (room == 7) {
+			if (killedgoblin == false)
+				cout << "A small goblin next to a gate stops you. Fight him to continue North or East, or head pack West." << endl;
+			if (killedgoblin == true)
+				cout << "An unguarded wall marks the start of goblin terrectory. You can head North, East, or West" << endl;
+			cin >> input;
+			if (input == "gold")
+				cout << gold << endl;
+			if (killedgoblin == true) {
+				if (input == "north" || input == "n")
+					room = 3;
+				if (input == "east" || input == "e")
+					room = 8;
+			}
+			if (input == "west" || input == "w")
+				room = 1;
+			if (input == "fight" || input == "steal" || input == "rob")
+				combat(10, 2, "small goblin");
+		}
+		//room 6, part of the village, a small stand alone building where you can gamble 
+		if (room == 6) {
+			cout << "A small casino. You can gamble your gold here or head back South." << endl;
+			cin >> input;
+			if (input == "gold")
+				cout << gold << endl;
+			if (input == "south" || input == "s")
+				room = 1;
+			if (input == "slots" || input == "spin")
+				slots();
+		}
+		//room 8, an abandoned camp with a chest of gold 
+		if (room == 8) {
+			if(openedchest == false)
+				cout << "A chest lies in the middle of a ruined goblin camp. You are sure it is not a mimic. Open it, continue East or head back West." << endl;
+			if (openedchest == true)
+				cout << "An abandonded campsite. Can go East or West" << endl;
+			cin >> input;
+			if (input == "gold")
+				cout << gold << endl;
+			if (input == "east" || input == "e")
+				room = 9;
+			if (input == "west" || input == "w")
+				room = 7;
+			if (input == "open"){
+				randnum = rand() % 100 + 60;
+				cout << "you opened the chest and gained " << randnum << " gold!" << endl;
+			gold += randnum;
+			openedchest = true;
+		}
+		}
+		//room 9, the path here is cursed to keep intruders out 
+		if (room == 9) {
+			cout << "The ground in the path is glowing red and radaiting heat. To continue North you must find a way to protect your feet. That or head back the way you came (west)" << endl;
+			cin >> input;
+			if (input == "gold")
+				cout << gold << endl;
+			if (input == "north" || input == "n" && check("fireboots") == true)
+				room = 10;
+			if (input == "west" || input == "w")
+				room = 8;
+		}
+		//room 10, a clearing surounded by cursed rocks to keep people out, only entrence is the cursed path of room 9 
+		if (room == 10) {
+			cout << "Krumblor, the Cookie Dragon is chained down in a large clearing surrounded by rocks with runes carved into them. The chains all have the same lock. One key should be all it takes to free him. The only exit is to the south, unless you free Krumblor." << endl;
+			cin >> input;
+			if (input == "gold")
+				cout << gold << endl;
+			if (input == "south" || input == "s")
+				room = 9;
+			if (input == "free" && check("key") == true)
+				win(gold, killed);
+				
+		}
+		//end loop
+		}
+		//end main
+	}
+//combat function
+void combat(int mobhp, int mobatk, string enemy) {
+	cout << enemy << " attacks, stats are " << mobhp << " hp and " << mobatk << " attack" << endl;
+	bool fight = true;
+	bool gotaway = false;
+	int hp = 20;
+	int atk = 3;
+
+	//item checks
+	if (check("rustysword") == true)
+		atk = 7;
+	if (check("goodsword") == true)
+		atk = 16;
+	if (check("newarmor") == true)
+		hp += 15;
+	if (check("glass") == true)
+		atk += 3;
+	//cobmat loop
+	while (fight == true) {
+		//monster deaths
+		if (mobhp <= 0) {
+			cout << enemy << " has been defeated!" << endl;
+			fight = false;
+			killed++;
+			if (enemy == "bandit") {
+				cout << "The path to the bandit boss is now open" << endl;
+				cout << "obtained 68 gold! You now have " << gold << " gold total." << endl;
+				killedbandit = true;
+			}
+			if (enemy == "bandit boss") {
+				cout << "Obtained 106 gold and key! you have " << gold << " gold total." << endl;
+				killedogre = true;
+				gold += 106;
+				inv.push_back("key");
+			}
+			else if (enemy == "small goblin") {
+				killedgoblin = true;
+				gold += 7;
+				cout << "Obtained 7 gold! you have " << gold << " gold total." << endl;
+			}
+			else if (enemy == "angery shopkeep") {
+				cout << "You monster." << endl;
+				cout << "obtained, 57 gold! you have " << gold << " gold total." << endl;
+				cout << "During the fight a lantren was knocked down, destroying the shop in everthing in it." << endl;
+				killedshop = true;
+				gold += 57;
+			}
+			else if (enemy == "mirror") {
+				cout << "that glass sure was sharp! I bet you can use this. . . ." << endl;
+				if (glass == false){
+					inv.push_back("glass");
+					glass = true;
+				}
+			}
+			else {
+				randnum = rand() % 76;
+				gold += randnum;
+				cout << "Obtained " << randnum << " gold! you have "<< gold << " gold total." << endl;
+			}
+		}
+		//player death
+		if (hp <= 0) {
+			cout << "You died!" << endl;
+			fight = false;
+			lose = true;
+		}
+		//actual combat
+		if (fight == true) {
+			cout << "do you attack or run?" << endl;
+			cin >> input;
+			if (input == "run" || input == "r") {
+				cout << "you attemp to escape" << endl;
+				randnum = rand() % 10 + 1;
+				if (randnum < 5) {
+					cout << "you got away" << endl;
+					room = 1;
+					fight = false;
+					gotaway = true;
+				}
+				else {
+					cout << "you did not escape" << endl;
+				}
+			}
+			if (input == "fight" || input == "attack" || input == "atk") {
+				randnum = rand() % 10 + 1;
+				if (randnum == 1)
+					cout << "you missed, idiot" << endl;
+				else{
+					mobhp -= atk;
+					cout << "hit " << enemy << " for " << atk << " damage! It has " << mobhp << " left." << endl;
+				}
+			}
+			if (mobhp > 0 && gotaway == false) {
+				hp -= mobatk;
+				cout << enemy << " hit you! You took " << mobatk << " damage! You have " << hp << " left." << endl;
+			}
+		}
+		//end loop
+	}
+	//end function
+}
+//checks if item is in inv
+bool check(string thing) {
+	for (int x = 0; x<inv.size(); x++) {
+		if (inv[x] == thing) {
+			return true;
+		}
+	}
+	return false;
+
+
+}
+//plays text if you win
+void win(int gold, int killed) {
+	cout << "You free Krumblor the Cookie Dragon from his chains and fly off into the sunset." << endl;
+	cout << "congrats on beating the game!" << endl;
+	cout << "you killed " << killed << " enemies and had " << gold << " gold left when you finished the game." << endl;
+	if(goldwon >0)
+		cout << "You spent " << goldspent << " on slots and won " << goldwon << " gold." << endl;
+	else 
+		cout << "You spent " << goldspent << " on slots and lost " << goldwon << " gold." << endl;
+	lose = true;
+	//cuz i reuse a vairable here you can never win in my game >:D
+}
+//monster gen
+void summon() {
+	cout << "you summon a monster!" << endl;
+	randnum = rand() % 100 + 1;
+	//35% to spawn
+	if (randnum >= 1 && randnum <= 35) {
+		combat(15, 1, "big beetel");
+	}
+	//25% chance to spawn
+	if (randnum >= 36 && randnum <= 60) {
+		combat(16, 4, "hoplite");
+	}
+	//20% chance to spawn
+	if (randnum >= 60 && randnum <= 80) {
+		combat(10, 7, "barbarian");
+	}
+	//15% chance to spawn
+	if (randnum >= 80 && randnum <= 95) {
+	combat(15, 3, "mirror");
+	}
+	//5% chance to spawn (MAJOR TROLL, RUN IF YOU SEE IT
+	if (randnum >= 95 && randnum <= 100) {
+		combat(140, 17, "D'tja, Demon king");
+	}
+
+}
+//gambling function
+void slots() {
+	cout << "The slot machine rolls 3 slots." << endl;
+	cout << "getting 3 of any number to get a huge jackpot." << endl;
+	cout << "You also get 7 gold per 7 and 2 gold per 4." << endl;
+	//slot machine vairables
+	bool spinning = true;
+	int winnings = 0;
+	int spins = 0;
+
+	while (spinning == true) {
+		cout << "spinning costs 5 gold per. Type spin or s to spin and quit to leave. You currently have " << gold << " gold." << endl;
+		cin >> input;
+		//stops you from spinning if you are broke
+		if (input == "spin" || "s" && gold < 5) {
+			cout << "you dont have enough money" << endl;
+			spinning = false;
+		}
+		//lets you leave the casino
+		if (input == "back" || input == "quit" || input == "q")
+			spinning = false;
+		//starts the gambling
+		if (input == "spin" || "s" && gold >=5) {
+			//updates gold and gold spent stats
+			goldspent += 5;
+			spins += 5;
+			gold -= 5;
+			//generates randnom numbers
+			randnum = rand() % 9 + 1;
+			randnum2 = rand() % 9 + 1;
+			randnum3 = rand() % 9 + 1;
+			//makes a neat little slot machine looking thing with symbols
+			cout << "-------------" << endl;
+			cout << "| " << randnum << " | " << randnum2 << " | " << randnum3 << " |" << endl;
+			cout << "-------------" << endl << endl;
+
+			//jackpot rewards
+			if (randnum == 1 && randnum2 == 1 && randnum3 == 1) {
+				cout << "You got the jackpot!!! You earned 100 gold!" << endl << endl;
+				gold += 100;
+				winnings += 100;
+				goldwon += 100;
+			}
+			if (randnum == 2 && randnum2 == 2 && randnum3 == 2) {
+				cout << "You got the jackpot!!! You earned 200 gold!" << endl << endl;
+				gold += 200;
+				winnings += 200;
+				goldwon += 200;
+			}
+			if (randnum == 3 && randnum2 == 3 && randnum3 == 3) {
+				cout << "You got the jackpot!!! You earned 250 gold!" << endl << endl;
+				gold += 250;
+				winnings += 250;
+				goldwon += 250;
+			}
+			if (randnum == 4 && randnum2 == 4 && randnum3 == 4) {
+				cout << "You got the jackpot!!! You earned 350 gold!" << endl << endl;
+				gold += 350;
+				winnings += 350;
+				goldwon += 350;
+			}
+			if (randnum == 5 && randnum2 == 5 && randnum3 == 5) {
+				cout << "You got the jackpot!!! You earned 300 gold!" << endl << endl;
+				gold += 300;
+				winnings += 300;
+				goldwon += 300;
+			}
+			if (randnum == 6 && randnum2 == 6 && randnum3 == 6) {
+				cout << "You got the jackpot!!! You earned 400 gold!" << endl << endl;
+				gold += 400;
+				winnings += 400;
+				goldwon += 400;
+			}
+			if (randnum == 7 && randnum2 == 7 && randnum3 == 7) {
+				cout << "You got the massive jackpot!!! You earned 1,500 gold!" << endl << endl;
+				gold += 1500;
+				winnings += 1500;
+				goldwon += 1500;
+			}
+			if (randnum == 8 && randnum2 == 8 && randnum3 == 8) {
+				cout << "You got the jackpot!!! You earned 750 gold!" << endl << endl;
+				gold += 750;
+				winnings += 750;
+				goldwon += 750;
+			}
+			if (randnum == 9 && randnum2 == 9 && randnum3 == 9) {
+				cout << "You got the jackpot!!! You earned 1,000 gold!" << endl << endl;
+				gold += 1000;
+				winnings += 1000;
+				goldwon += 1000;
+			}
+
+			//small rewards (7s and 4s
+			if (randnum == 7) {
+				gold += 7;
+				winnings += 7;
+				goldwon += 7;
+			}
+			if (randnum2 == 7) {
+				gold += 7;
+				winnings += 7;
+				goldwon += 7;
+			}
+			if (randnum3 == 7) {
+				gold += 7;
+				winnings += 7;
+				goldwon += 7;
+			}
+			if (randnum == 4) {
+				gold += 4;
+				winnings += 4;
+				goldwon += 4;
+			}
+			if (randnum2 == 4) {
+				gold += 2;
+				winnings += 2;
+				goldwon += 2;
+			}
+			if (randnum3 == 4) {
+				gold += 2;
+				winnings += 2;
+				goldwon += 2;
+			}
+		}
+		//end of loop
+	}
+	//displays gold spent and gold won
+	if (spinning == false) {
+		cout << "you winnings after spending " << spins << " gold on spins is " << winnings << " gold!" << endl;
+	}
+}
+
+//the last line of code - heres a cookie for making it all the way
